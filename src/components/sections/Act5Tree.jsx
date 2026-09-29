@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Share2, Download, Check, Sparkles, Sprout } from 'lucide-react'
+import { Share2, Download, Check, Sparkles, Sprout, Loader2 } from 'lucide-react'
 
 // Date cible : Thanksgiving, jeudi 26 novembre 2026
 const TARGET_DATE = new Date('2026-11-26T00:00:00')
@@ -13,6 +13,7 @@ export function Act5Tree({
 }) {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 })
   const [copied, setCopied] = useState(false)
+  const [isGeneratingCard, setIsGeneratingCard] = useState(false)
 
   useEffect(() => {
     const calculateTime = () => {
@@ -43,6 +44,18 @@ export function Act5Tree({
     }
     setCopied(true)
     setTimeout(() => setCopied(false), 2500)
+  }
+
+  const handleDownload = async () => {
+    if (isGeneratingCard) return
+    setIsGeneratingCard(true)
+    try {
+      if (onDownloadCard) {
+        await onDownloadCard()
+      }
+    } finally {
+      setIsGeneratingCard(false)
+    }
   }
 
   return (
@@ -116,15 +129,25 @@ export function Act5Tree({
           </div>
         )}
 
-        {/* Boutons d action : Telecharger et Partager */}
+        {/* Boutons d action : Telecharger ma carte et Copier mon lien */}
         <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
           <button
             type="button"
-            onClick={onDownloadCard}
-            className="inline-flex items-center gap-2.5 px-6 py-3 rounded-full bg-creme-200/10 hover:bg-creme-200/20 text-creme-100 font-sans text-xs tracking-wider uppercase font-medium border border-creme-200/20 transition-all duration-300"
+            onClick={handleDownload}
+            disabled={isGeneratingCard}
+            className="inline-flex items-center gap-2.5 px-6 py-3 rounded-full bg-creme-200/10 hover:bg-creme-200/20 disabled:opacity-50 text-creme-100 font-sans text-xs tracking-wider uppercase font-medium border border-creme-200/20 transition-all duration-300"
           >
-            <Download className="w-4 h-4 text-orange-accent" />
-            <span>Telecharger ma carte</span>
+            {isGeneratingCard ? (
+              <>
+                <Loader2 className="w-4 h-4 text-orange-accent animate-spin" />
+                <span>Creation de la carte...</span>
+              </>
+            ) : (
+              <>
+                <Download className="w-4 h-4 text-orange-accent" />
+                <span>Telecharger ma carte</span>
+              </>
+            )}
           </button>
 
           <button

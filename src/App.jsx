@@ -11,6 +11,7 @@ import { SoundToggle } from './components/common/SoundToggle'
 import { ScrollIndicator } from './components/common/ScrollIndicator'
 import { ReadOnlyBanner } from './components/common/ReadOnlyBanner'
 import { encodeGratitudesToUrl, decodeGratitudesFromUrl } from './utils/urlSharing'
+import { generateThanksgivingCard } from './utils/cardGenerator'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 const STORAGE_KEY = 'thanksgiving_gratitudes_2026'
@@ -77,7 +78,7 @@ export default function App() {
     }
   }, [])
 
-  // Sauvegarde dans localStorage uniquement pour l arbre personnel (pas en lecture seule)
+  // Sauvegarde dans localStorage uniquement pour l arbre personnel
   useEffect(() => {
     if (isReadOnly) return
     try {
@@ -146,14 +147,12 @@ export default function App() {
 
   // Passage en mode personnel (quitter la lecture seule)
   const handleResetToPersonal = useCallback(() => {
-    // Retrait du parametre ?g=... dans la barre d adresse
     if (window.history && window.history.pushState) {
       window.history.pushState({}, '', window.location.pathname)
     }
 
     setIsReadOnly(false)
 
-    // Restauration de l arbre personnel
     try {
       const saved = localStorage.getItem(STORAGE_KEY)
       if (saved) {
@@ -171,9 +170,10 @@ export default function App() {
     scrollTo('#acte-4', { duration: 1.5 })
   }, [scrollTo])
 
-  const handleDownloadCard = () => {
-    alert('L export de la carte sera integre a l etape 5.')
-  }
+  // Generation et telechargement de la carte souvenir PNG 1080x1920
+  const handleDownloadCard = useCallback(async () => {
+    return generateThanksgivingCard(gratitudes)
+  }, [gratitudes])
 
   // Copie de l URL avec encodage base64 des gratitudes
   const handleShareLink = useCallback(() => {

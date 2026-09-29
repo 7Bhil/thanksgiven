@@ -22,14 +22,18 @@
   - Bougie vacillante intimiste (Acte 1)
   - Arbre low-poly aux teintes d'automne (amas icosaedriques, branches)
   - Feuilles de gratitude personnalisees avec couleurs d'automne et ancrage sur les branches
-  - Composant `FallingLeaf` : vol parabolique en courbe de Bezier avec rotations organiques depuis la camera jusqu'a la branche cible lors de l'offrande
+  - Composant `FallingLeaf` : vol parabolique en courbe de Bezier avec rotations organiques
   - Eclairage adaptatif selon l'heure locale
   - Transitions de camera douces selon l'acte
 - **Partage URL & Securite** :
   - Encodage Base64 compatible URL avec gestion complete des caracteres UTF-8
-  - Decodage et assainissement strict anti-XSS (suppression de chevrons et caracteres de controle)
-  - Mode lecture seule automatique a la reception de `?g=...` sans ecrasement du localStorage local
-  - Action « Planter mon propre arbre » restaurant l'etat personnel et nettoyant l'URL via History API
+  - Decodage et assainissement strict anti-XSS
+  - Mode lecture seule automatique a la reception de `?g=...`
+  - Action « Planter mon propre arbre » restaurant l'etat personnel
+- **Export Graphique Haute Resolution** :
+  - Generateur de carte souvenir 1080x1920 (format story 9:16) via HTML5 Canvas 2D
+  - Fond degrade brun chaud, encadrement dore, arbre stylise et mise en page soignee des gratitudes
+  - Export direct en PNG cote client sans appel serveur
 - **Sonorisation (etapes suivantes)** : Howler.js
 
 ## 3. Directives & Contraintes
@@ -44,7 +48,7 @@
 - [x] **Etape 2** : Scene 3D de base (bougie vacillante, arbre low-poly, eclairage dynamique adapte a l'heure, particules de feuilles) et controleur de camera fluide relie au scroll.
 - [x] **Etape 3** : Acte 4 avance (formulaire avec limite 80 car, suggestions, palette de teintes dorees, vol 3D parabolique de la feuille vers l'arbre, synchronisation bidirectionnelle state + localStorage et gestion des feuilles).
 - [x] **Etape 4** : Partage URL securise base64 (`?g=...`), assainissement XSS, mode lecture seule avec bandeau dedie et bouton « Planter mon propre arbre ».
-- [ ] **Etape 5** : Generation et export PNG de la carte de Thanksgiving (canvas haute resolution format story 1080x1920).
+- [x] **Etape 5** : Generation et export PNG de la carte souvenir haute resolution (1080x1920) 100% cote client avec gestion de l'etat de chargement.
 - [ ] **Etape 6** : Actes 2 et 3 enrichis (marche, table 3D avec plats), ambiance sonore Howler (feu qui crepite, vent leger).
 - [ ] **Etape 7** : Version degradee 2D et optimisations mobiles/a11y.
 - [ ] **Etape 8** : Deploiement statique et revue finale.
