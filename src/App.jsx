@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useLenisScroll } from './hooks/useLenisScroll'
 import { Experience } from './components/canvas/Experience'
+import { GRATITUDE_LEAF_POSITIONS } from './components/canvas/Tree'
 import { Act1Arrival } from './components/sections/Act1Arrival'
 import { Act2Market } from './components/sections/Act2Market'
 import { Act3Table } from './components/sections/Act3Table'
@@ -18,18 +19,21 @@ const DEFAULT_GRATITUDES = [
     id: 'init-1',
     text: 'Le parfum du pain chaud partage en famille',
     author: 'Clara',
+    leafColor: '#d9622b',
     createdAt: '2026-09-29T12:00:00.000Z',
   },
   {
     id: 'init-2',
     text: 'Le souffle du vent frais sous les arbres d or',
     author: 'Julien',
+    leafColor: '#c27827',
     createdAt: '2026-09-29T12:30:00.000Z',
   },
   {
     id: 'init-3',
     text: 'La lumiere d une fin de journee d automne',
     author: 'Sarah',
+    leafColor: '#dec195',
     createdAt: '2026-09-29T13:00:00.000Z',
   },
 ]
@@ -38,21 +42,29 @@ export default function App() {
   const { scrollTo } = useLenisScroll()
   const [isPlayingSound, setIsPlayingSound] = useState(false)
   const [currentAct, setCurrentAct] = useState(1)
+  const [animatingLeaf, setAnimatingLeaf] = useState(null)
+  const [isAnimating, setIsAnimating] = useState(false)
+
+  // Recuperation securisee du localStorage
   const [gratitudes, setGratitudes] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY)
-      return saved ? JSON.parse(saved) : DEFAULT_GRATITUDES
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed
+      }
+      return DEFAULT_GRATITUDES
     } catch {
       return DEFAULT_GRATITUDES
     }
   })
 
-  // Synchronisation du localStorage
+  // Synchronisation defensive du localStorage
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(gratitudes))
     } catch (err) {
-      console.warn('Impossible de sauvegarder dans localStorage', err)
+      console.warn('Impossible de synchroniser le localStorage', err)
     }
   }, [gratitudes])
 
@@ -79,10 +91,42 @@ export default function App() {
     scrollTo('#acte-2', { duration: 1.6 })
   }
 
-  const handleAddGratitude = (item) => {
-    setGratitudes((prev) => [item, ...prev].slice(0, 12))
-    scrollTo('#acte-5', { duration: 1.8 })
-  }
+  // Declenchement de l animation de vol de la feuille vers l arbre
+  const handleAddGratitude = useCallback((newGratitude) => {
+    if (gratitudes.length >= 12 || isAnimating) return
+
+    setIsAnimating(true)
+
+    // Calcul de la branche cible sur l arbre 3D
+    const targetIndex = gratitudes.length % GRATITUDE_LEAF_POSITIONS.length
+    const branchTarget = GRATITUDE_LEAF_POSITIONS[targetIndex]
+    
+    // Position dans le repere monde de la branche
+    const targetWorldPos = [
+      branchTarget[0],
+      branchTarget[1] - 0.2, // decalage du tronc
+      branchTarget[2] - 0.5,
+    ]
+
+    setAnimatingLeaf({
+      startPos: [0.2, 2.3, 3.2],
+      targetPos: targetWorldPos,
+      color: newGratitude.leafColor || '#d9622b',
+      onComplete: () => {
+        // Enracinement permanent sur l arbre
+        setGratitudes((prev) => [newGratitude, ...prev].slice(0, 12))
+        setAnimatingLeaf(null)
+        setIsAnimating(false)
+        // Transition douce vers l Acte 5 pour admirer l arbre
+        scrollTo('#acte-5', { duration: 2.0 })
+      },
+    })
+  }, [gratitudes.length, isAnimating, scrollTo])
+
+  // Suppression d une gratitude pour liberer une feuille
+  const handleDeleteGratitude = useCallback((id) => {
+    setGratitudes((prev) => prev.filter((g) => g.id !== id))
+  }, [])
 
   const handleDownloadCard = () => {
     alert('L export de la carte sera integre a l etape 5.')
@@ -94,8 +138,12 @@ export default function App() {
 
   return (
     <div className="relative min-h-screen bg-brun-900 text-creme-200 selection:bg-orange-accent selection:text-creme-100 font-sans">
-      {/* Toile 3D Three.js immersive en arriere-plan fixe */}
-      <Experience currentAct={currentAct} gratitudes={gratitudes} />
+      {/* Scene 3D WebGL avec support de vol de la feuille */}
+      <Experience
+        currentAct={currentAct}
+        gratitudes={gratitudes}
+        animatingLeaf={animatingLeaf}
+      />
 
       {/* Bouton de son discret */}
       <SoundToggle
@@ -106,7 +154,7 @@ export default function App() {
       {/* Indicateur de progression du rituel */}
       <ScrollIndicator activeAct={currentAct} totalActs={5} />
 
-      {/* Contenu textuel et interactif scrollytelling */}
+      {/* Parcours scrollytelling en 5 Actes */}
       <main className="relative z-10">
         <Act1Arrival onEnter={handleEnterExperience} />
         <Act2Market />
@@ -114,7 +162,9 @@ export default function App() {
         <Act4Gratitude
           gratitudes={gratitudes}
           onAddGratitude={handleAddGratitude}
+          onDeleteGratitude={handleDeleteGratitude}
           maxGratitudes={12}
+          isAnimating={isAnimating}
         />
         <Act5Tree
           gratitudes={gratitudes}

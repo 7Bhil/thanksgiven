@@ -24,12 +24,24 @@ const FOLIAGE_CLUSTERS = [
   { pos: [0.2, 1.9, 1.1], scale: 0.85, color: '#d9622b', speed: 0.95 },
 ]
 
+// Calcul deterministe des positions des 12 feuilles de gratitude sur les branches
+export const GRATITUDE_LEAF_POSITIONS = Array.from({ length: 12 }, (_, i) => {
+  const angle = (i / 12) * Math.PI * 2 + 0.35
+  const radius = 1.35 + (i % 3) * 0.35
+  const height = 1.85 + (i % 4) * 0.45
+  return [
+    Math.cos(angle) * radius,
+    height,
+    Math.sin(angle) * radius,
+  ]
+})
+
 export function Tree({ position = [0, 0, 0], gratitudes = [] }) {
   const groupRef = useRef()
   const foliageRefs = useRef([])
   const leavesParticlesRef = useRef()
 
-  // Generation de particules de feuilles flottantes dans la brume
+  // Particules d ambiance d automne
   const particleCount = 45
   const particles = useMemo(() => {
     const temp = []
@@ -53,12 +65,12 @@ export function Tree({ position = [0, 0, 0], gratitudes = [] }) {
   useFrame((state) => {
     const t = state.clock.getElapsedTime()
 
-    // Respiration et legere torsion globale de l arbre au vent
+    // Respiration de l arbre
     if (groupRef.current) {
       groupRef.current.rotation.y = Math.sin(t * 0.15) * 0.04
     }
 
-    // Oscillation douce des amas de feuillage
+    // Mouvement organique du feuillage
     foliageRefs.current.forEach((mesh, idx) => {
       if (!mesh) return
       const cluster = FOLIAGE_CLUSTERS[idx]
@@ -67,7 +79,7 @@ export function Tree({ position = [0, 0, 0], gratitudes = [] }) {
       mesh.rotation.z = Math.cos(t * cluster.speed * 0.8 + offset) * 0.04
     })
 
-    // Animation continue des particules de feuilles d automne
+    // Feuilles d automne tourbillonnantes
     if (leavesParticlesRef.current) {
       const dummy = new THREE.Object3D()
       particles.forEach((p, i) => {
@@ -76,7 +88,6 @@ export function Tree({ position = [0, 0, 0], gratitudes = [] }) {
         p.rotX += 0.01
         p.rotY += 0.015
 
-        // Reinitialisation quand la feuille touche le sol
         if (p.y < -0.5) {
           p.y = 5.5 + Math.random()
           p.x = (Math.random() - 0.5) * 7
@@ -93,54 +104,37 @@ export function Tree({ position = [0, 0, 0], gratitudes = [] }) {
     }
   })
 
-  // Positions precalculees pour les feuilles de gratitude de l Acte 4/5
-  const gratitudeLeafPositions = useMemo(() => {
-    return Array.from({ length: 12 }, (_, i) => {
-      const angle = (i / 12) * Math.PI * 2 + 0.3
-      const radius = 1.4 + (i % 3) * 0.4
-      const height = 1.8 + (i % 4) * 0.5
-      return [
-        Math.cos(angle) * radius,
-        height,
-        Math.sin(angle) * radius,
-      ]
-    })
-  }, [])
-
   return (
     <group ref={groupRef} position={position}>
-      {/* Îlot de terre / socle automnal */}
+      {/* Îlot de terre / socle */}
       <mesh position={[0, -0.4, 0]} receiveShadow>
         <cylinderGeometry args={[2.8, 3.4, 0.8, 12]} />
         <meshStandardMaterial color="#24150e" roughness={0.9} flatShading />
       </mesh>
 
-      {/* Tronc principal low-poly */}
+      {/* Tronc en ecorce chaude */}
       <mesh position={[0, 1.4, 0]} castShadow>
         <cylinderGeometry args={[0.35, 0.65, 2.8, 7]} />
         <meshStandardMaterial color="#42291a" roughness={0.85} flatShading />
       </mesh>
 
-      {/* Branches maîtresses divergentes */}
+      {/* Branches maîtresses */}
       <group position={[0, 2.2, 0]}>
-        {/* Branche gauche */}
         <mesh position={[-0.55, 0.4, 0.1]} rotation={[0.2, 0, 0.75]}>
           <cylinderGeometry args={[0.18, 0.28, 1.5, 6]} />
           <meshStandardMaterial color="#42291a" roughness={0.85} flatShading />
         </mesh>
-        {/* Branche droite */}
         <mesh position={[0.6, 0.5, 0.15]} rotation={[-0.1, 0, -0.7]}>
           <cylinderGeometry args={[0.16, 0.26, 1.6, 6]} />
           <meshStandardMaterial color="#42291a" roughness={0.85} flatShading />
         </mesh>
-        {/* Branche arriere */}
         <mesh position={[0.1, 0.6, -0.6]} rotation={[-0.7, 0.3, 0]}>
           <cylinderGeometry args={[0.15, 0.24, 1.4, 6]} />
           <meshStandardMaterial color="#42291a" roughness={0.85} flatShading />
         </mesh>
       </group>
 
-      {/* Amas volumétriques de feuillage (Low-Poly Icosaedre) */}
+      {/* Amas volumetriques d automne */}
       {FOLIAGE_CLUSTERS.map((c, i) => (
         <mesh
           key={i}
@@ -159,26 +153,33 @@ export function Tree({ position = [0, 0, 0], gratitudes = [] }) {
         </mesh>
       ))}
 
-      {/* Feuilles de gratitude fixées sur les branches */}
+      {/* Feuilles de gratitude fixees avec pulsation doree */}
       {gratitudes.map((gratitude, index) => {
-        const pos = gratitudeLeafPositions[index % gratitudeLeafPositions.length]
+        const pos = GRATITUDE_LEAF_POSITIONS[index % GRATITUDE_LEAF_POSITIONS.length]
+        const leafColor = gratitude.leafColor || ['#d9622b', '#c27827', '#e27b49', '#dec195', '#b85e2b'][index % 5]
+        
         return (
           <group key={gratitude.id} position={pos}>
-            <mesh scale={0.22}>
+            <mesh scale={[0.18, 0.26, 0.08]} rotation={[0.2, (index * 0.5), 0.3]} castShadow>
               <dodecahedronGeometry args={[1, 0]} />
               <meshStandardMaterial
-                color="#f4ead8"
-                emissive="#d9622b"
-                emissiveIntensity={0.35}
+                color={leafColor}
+                emissive={leafColor}
+                emissiveIntensity={0.4}
                 roughness={0.4}
                 flatShading
               />
+            </mesh>
+            {/* Tige de la feuille la reliant a la branche */}
+            <mesh position={[0, -0.1, 0]}>
+              <cylinderGeometry args={[0.012, 0.012, 0.12, 4]} />
+              <meshBasicMaterial color="#321e14" />
             </mesh>
           </group>
         )
       })}
 
-      {/* Particules instanciees de feuilles d automne tourbillonnantes */}
+      {/* Particules instanciees */}
       <instancedMesh
         ref={leavesParticlesRef}
         args={[null, null, particleCount]}

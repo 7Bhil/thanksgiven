@@ -19,25 +19,26 @@
   - Inter (textes sobre sans-serif)
 - **Mouvements & Scroll** : Lenis (scroll fluide) synchronise avec GSAP ScrollTrigger
 - **Scene 3D** : Three.js, `@react-three/fiber`, `@react-three/drei`
-  - Bougie avec flamme tremblante et source ponctuelle animee
-  - Arbre low-poly aux teintes d'automne (amas icosaedriques, ecorce chaude)
-  - Particules instanciees de feuilles tourbillonnantes au vent
-  - Eclairage adaptatif a l'heure locale (jour dore / soiree bougie)
-  - Transitions de camera par interpolation douce (lerp) selon l'acte actif
+  - Bougie vacillante intimiste (Acte 1)
+  - Arbre low-poly aux teintes d'automne (amas icosaedriques, branches)
+  - Feuilles de gratitude personnalisees avec couleurs d'automne et ancrage sur les branches
+  - Composant `FallingLeaf` : vol parabolique en courbe de Bezier avec rotations organiques depuis la camera jusqu'a la branche cible lors de l'offrande
+  - Eclairage adaptatif selon l'heure locale
+  - Transitions de camera douces selon l'acte
 - **Sonorisation (etapes suivantes)** : Howler.js
 
 ## 3. Directives & Contraintes
 - **Zero Emoji** : Aucun emoji dans le code, les commentaires, la documentation, les commits ou les echanges.
 - **Commits en Francais** : Convention de commits normalisee en francais (`feat:`, `fix:`, `chore:`, etc.).
-- **Workflow Git** : Developpement sur branche `developp`.
+- **Workflow Git** : Developpement sur branche `developp` et push regulier vers `origin`.
 - **Dossier Agent** : Le sous-dossier `agent/` reste localement et est ignore par `.gitignore`.
 - **Validation pas a pas** : Chaque etape est livree et validee avec l'utilisateur avant d'entamer la suivante.
 
 ## 4. Suivi de l'Avancement
 - [x] **Etape 1** : Setup initial, design tokens, typographies Fraunces et Inter, architecture des 5 actes, Lenis + GSAP ScrollTrigger, integration initiale validee au build.
 - [x] **Etape 2** : Scene 3D de base (bougie vacillante, arbre low-poly, eclairage dynamique adapte a l'heure, particules de feuilles) et controleur de camera fluide relie au scroll.
-- [ ] **Etape 3** : Acte 4 avance (formulaire de gratitude, animation de chute des feuilles, liaison state + localStorage).
-- [ ] **Etape 4** : Partage URL securise base64 (`?g=...`) et mode lecture seule.
+- [x] **Etape 3** : Acte 4 avance (formulaire avec limite 80 car, suggestions, palette de teintes dorees, vol 3D parabolique de la feuille vers l'arbre, synchronisation bidirectionnelle state + localStorage et gestion des feuilles).
+- [ ] **Etape 4** : Partage URL securise base64 (`?g=...`) et mode lecture seule pour l'arbre des invites.
 - [ ] **Etape 5** : Export de la carte PNG (format 1080x1920 pour stories).
 - [ ] **Etape 6** : Actes 2 et 3 enrichis, ambiance sonore Howler (feu qui crepite, vent leger).
 - [ ] **Etape 7** : Version degradee 2D et optimisations mobiles/a11y.
