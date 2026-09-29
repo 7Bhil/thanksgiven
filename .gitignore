@@ -27,5 +27,6 @@ dist-ssr
 .env
 .env.production
 
-# Senior agent repo
+# Senior agent repo & local memory
 agent/
+BRAIN.md
