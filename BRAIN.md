@@ -27,6 +27,10 @@
   - Composant `FallingLeaf` : vol parabolique en courbe de Bezier avec rotations organiques
   - Eclairage adaptatif selon l'heure locale
   - Transitions de camera douces selon l'acte
+- **Version Degradee 2D & Accessibilite** :
+  - Hook `useDevicePerformance` : detection automatique de `prefers-reduced-motion` et absence ou limitations WebGL
+  - Composant `Fallback2D` : arriere-plan SVG/CSS d'automne ultra-leger et fluide, meme parcours scrollytelling complet sans GPU
+  - Selecteur manuel discret « Mode 3D / Mode 2D »
 - **Sonorisation Front-End Pure** :
   - `AutumnSoundEngine` : Synthese procedurale Web Audio API simulant le crepitement d'un feu de cheminee et le souffle du vent leger d'automne
   - Demarrage propre au premier clic utilisateur (« Entrer dans l'experience ») et bouton de contrôle du son
@@ -53,5 +57,5 @@
 - [x] **Etape 4** : Partage URL securise base64 (`?g=...`), assainissement XSS, mode lecture seule avec bandeau dedie et bouton « Planter mon propre arbre ».
 - [x] **Etape 5** : Generation et export PNG de la carte souvenir haute resolution (1080x1920) 100% cote client avec gestion de l'etat de chargement.
 - [x] **Etape 6** : Actes 2 et 3 enrichis (elements 3D du marche, table du banquet avec decouverte interactive des plats), sonorisation procedurale d'automne (feu de bois, vent leger) demarrant au premier clic et bouton mute.
-- [ ] **Etape 7** : Version degradee 2D (appareils faibles / `prefers-reduced-motion`) et optimisations mobiles/a11y.
-- [ ] **Etape 8** : Deploiement statique et revue finale.
+- [x] **Etape 7** : Version degradee 2D (appareils faibles / `prefers-reduced-motion`) et optimisations mobiles/a11y avec bascule discrete.
+- [ ] **Etape 8** : Deploiement statique, checklist de securite et revue finale.

@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useLenisScroll } from './hooks/useLenisScroll'
+import { useDevicePerformance } from './hooks/useDevicePerformance'
 import { Experience } from './components/canvas/Experience'
+import { Fallback2D } from './components/canvas/Fallback2D'
 import { GRATITUDE_LEAF_POSITIONS } from './components/canvas/Tree'
 import { Act1Arrival } from './components/sections/Act1Arrival'
 import { Act2Market } from './components/sections/Act2Market'
@@ -45,6 +47,7 @@ const DEFAULT_GRATITUDES = [
 
 export default function App() {
   const { scrollTo } = useLenisScroll()
+  const { useFallback2D, setUseFallback2D, prefersReducedMotion } = useDevicePerformance()
   const [isPlayingSound, setIsPlayingSound] = useState(false)
   const [currentAct, setCurrentAct] = useState(1)
   const [animatingLeaf, setAnimatingLeaf] = useState(null)
@@ -136,9 +139,16 @@ export default function App() {
     }
   }, [])
 
-  // Declenchement du vol 3D de la feuille
+  // Declenchement du vol de la feuille
   const handleAddGratitude = useCallback((newGratitude) => {
     if (gratitudes.length >= 12 || isAnimating || isReadOnly) return
+
+    if (useFallback2D || prefersReducedMotion) {
+      // Ajout direct sans calcul 3D si mode dégradé
+      setGratitudes((prev) => [newGratitude, ...prev].slice(0, 12))
+      scrollTo('#acte-5', { duration: 1.5 })
+      return
+    }
 
     setIsAnimating(true)
 
@@ -162,7 +172,7 @@ export default function App() {
         scrollTo('#acte-5', { duration: 2.0 })
       },
     })
-  }, [gratitudes.length, isAnimating, isReadOnly, scrollTo])
+  }, [gratitudes.length, isAnimating, isReadOnly, useFallback2D, prefersReducedMotion, scrollTo])
 
   // Suppression d une feuille personnelle
   const handleDeleteGratitude = useCallback((id) => {
@@ -214,19 +224,33 @@ export default function App() {
         <ReadOnlyBanner onResetToPersonal={handleResetToPersonal} />
       )}
 
-      {/* Scene 3D WebGL (avec bougie, marche, table, arbre et feuille animée) */}
-      <Experience
-        currentAct={currentAct}
-        gratitudes={gratitudes}
-        animatingLeaf={animatingLeaf}
-        onSelectDish={handleSelectDish}
-      />
+      {/* Arrière-plan graphique : Scene 3D WebGL ou Fallback 2D */}
+      {useFallback2D ? (
+        <Fallback2D gratitudes={gratitudes} />
+      ) : (
+        <Experience
+          currentAct={currentAct}
+          gratitudes={gratitudes}
+          animatingLeaf={animatingLeaf}
+          onSelectDish={handleSelectDish}
+        />
+      )}
 
       {/* Bouton de son d ambiance */}
       <SoundToggle
         isPlaying={isPlayingSound}
         onToggle={handleToggleSound}
       />
+
+      {/* Sélecteur discret de mode graphique (3D / 2D) */}
+      <button
+        type="button"
+        onClick={() => setUseFallback2D((v) => !v)}
+        aria-label={useFallback2D ? 'Activer la 3D WebGL' : 'Activer la 2D allégée'}
+        className="fixed top-6 left-6 z-50 px-2.5 py-1 rounded-full border border-creme-200/15 bg-brun-900/60 backdrop-blur-md text-[10px] font-mono tracking-wider uppercase text-creme-200/60 hover:text-creme-100 hover:border-orange-accent/40 transition-all"
+      >
+        {useFallback2D ? 'Mode 2D' : 'Mode 3D'}
+      </button>
 
       {/* Indicateur d acte au scroll */}
       <ScrollIndicator activeAct={currentAct} totalActs={5} />
