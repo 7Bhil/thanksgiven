@@ -18,7 +18,12 @@
   - Fraunces (titres expressifs serif)
   - Inter (textes sobre sans-serif)
 - **Mouvements & Scroll** : Lenis (scroll fluide) synchronise avec GSAP ScrollTrigger
-- **3D (etapes suivantes)** : Three.js, `@react-three/fiber`, `@react-three/drei`
+- **Scene 3D** : Three.js, `@react-three/fiber`, `@react-three/drei`
+  - Bougie avec flamme tremblante et source ponctuelle animee
+  - Arbre low-poly aux teintes d'automne (amas icosaedriques, ecorce chaude)
+  - Particules instanciees de feuilles tourbillonnantes au vent
+  - Eclairage adaptatif a l'heure locale (jour dore / soiree bougie)
+  - Transitions de camera par interpolation douce (lerp) selon l'acte actif
 - **Sonorisation (etapes suivantes)** : Howler.js
 
 ## 3. Directives & Contraintes
@@ -30,10 +35,10 @@
 
 ## 4. Suivi de l'Avancement
 - [x] **Etape 1** : Setup initial, design tokens, typographies Fraunces et Inter, architecture des 5 actes, Lenis + GSAP ScrollTrigger, integration initiale validee au build.
-- [ ] **Etape 2** : Scene 3D de base (bougie, arbre low-poly, eclairage chaud) et transitions entre actes.
-- [ ] **Etape 3** : Acte 4 avance (formulaire, chute de feuilles, persistance).
-- [ ] **Etape 4** : Partage URL securise base64 (`?g=...`).
-- [ ] **Etape 5** : Export de la carte PNG.
-- [ ] **Etape 6** : Marche, table 3D, son d'ambiance Howler, compte a rebours.
+- [x] **Etape 2** : Scene 3D de base (bougie vacillante, arbre low-poly, eclairage dynamique adapte a l'heure, particules de feuilles) et controleur de camera fluide relie au scroll.
+- [ ] **Etape 3** : Acte 4 avance (formulaire de gratitude, animation de chute des feuilles, liaison state + localStorage).
+- [ ] **Etape 4** : Partage URL securise base64 (`?g=...`) et mode lecture seule.
+- [ ] **Etape 5** : Export de la carte PNG (format 1080x1920 pour stories).
+- [ ] **Etape 6** : Actes 2 et 3 enrichis, ambiance sonore Howler (feu qui crepite, vent leger).
 - [ ] **Etape 7** : Version degradee 2D et optimisations mobiles/a11y.
 - [ ] **Etape 8** : Deploiement statique et revue finale.

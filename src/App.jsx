@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useLenisScroll } from './hooks/useLenisScroll'
+import { Experience } from './components/canvas/Experience'
 import { Act1Arrival } from './components/sections/Act1Arrival'
 import { Act2Market } from './components/sections/Act2Market'
 import { Act3Table } from './components/sections/Act3Table'
@@ -55,14 +56,14 @@ export default function App() {
     }
   }, [gratitudes])
 
-  // Detection de l acte actif au defilement via ScrollTrigger
+  // Suivi de l acte actif au scroll avec ScrollTrigger
   useEffect(() => {
     const sections = ['#acte-1', '#acte-2', '#acte-3', '#acte-4', '#acte-5']
     const triggers = sections.map((sel, idx) => {
       return ScrollTrigger.create({
         trigger: sel,
-        start: 'top center',
-        end: 'bottom center',
+        start: 'top 55%',
+        end: 'bottom 55%',
         onEnter: () => setCurrentAct(idx + 1),
         onEnterBack: () => setCurrentAct(idx + 1),
       })
@@ -75,17 +76,15 @@ export default function App() {
 
   const handleEnterExperience = () => {
     setIsPlayingSound(true)
-    scrollTo('#acte-2', { offset: 0, duration: 1.6 })
+    scrollTo('#acte-2', { duration: 1.6 })
   }
 
   const handleAddGratitude = (item) => {
     setGratitudes((prev) => [item, ...prev].slice(0, 12))
-    // Scroll fluide vers l arbre pour voir la feuille enracinee
     scrollTo('#acte-5', { duration: 1.8 })
   }
 
   const handleDownloadCard = () => {
-    // Declencheur pour l etape future d export canvas
     alert('L export de la carte sera integre a l etape 5.')
   }
 
@@ -95,25 +94,19 @@ export default function App() {
 
   return (
     <div className="relative min-h-screen bg-brun-900 text-creme-200 selection:bg-orange-accent selection:text-creme-100 font-sans">
+      {/* Toile 3D Three.js immersive en arriere-plan fixe */}
+      <Experience currentAct={currentAct} gratitudes={gratitudes} />
+
       {/* Bouton de son discret */}
       <SoundToggle
         isPlaying={isPlayingSound}
         onToggle={() => setIsPlayingSound((p) => !p)}
       />
 
-      {/* Indicateur d acte au scroll */}
+      {/* Indicateur de progression du rituel */}
       <ScrollIndicator activeAct={currentAct} totalActs={5} />
 
-      {/* Fond atmospherique avec brume et lumieres feutrees */}
-      <div 
-        className="fixed inset-0 pointer-events-none z-0"
-        aria-hidden="true"
-      >
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full bg-orange-dark/5 blur-[160px]" />
-        <div className="absolute bottom-10 left-10 w-[500px] h-[500px] rounded-full bg-ambre-dark/5 blur-[140px]" />
-      </div>
-
-      {/* Contenu principal en 5 Actes */}
+      {/* Contenu textuel et interactif scrollytelling */}
       <main className="relative z-10">
         <Act1Arrival onEnter={handleEnterExperience} />
         <Act2Market />
