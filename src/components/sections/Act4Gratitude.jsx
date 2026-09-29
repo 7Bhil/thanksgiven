@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Send, Leaf, Trash2, CheckCircle2 } from 'lucide-react'
+import { Send, Leaf, Trash2, CheckCircle2, Sprout } from 'lucide-react'
 
 const SUGGESTIONS = [
   'La chaleur d un repas partage en paix',
@@ -19,9 +19,11 @@ const LEAF_COLORS = [
 export function Act4Gratitude({
   onAddGratitude,
   onDeleteGratitude,
+  onResetToPersonal,
   gratitudes = [],
   maxGratitudes = 12,
   isAnimating = false,
+  isReadOnly = false,
 }) {
   const [text, setText] = useState('')
   const [author, setAuthor] = useState('')
@@ -30,7 +32,7 @@ export function Act4Gratitude({
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    if (!text.trim() || isAnimating) return
+    if (!text.trim() || isAnimating || isReadOnly) return
     if (gratitudes.length >= maxGratitudes) return
 
     const newGratitude = {
@@ -60,143 +62,171 @@ export function Act4Gratitude({
       <div className="max-w-2xl mx-auto w-full space-y-12">
         <header className="text-center space-y-4">
           <p className="text-xs uppercase tracking-[0.35em] text-orange-accent font-sans font-medium">
-            Acte IV &bull; L Offrande Personnelle
+            Acte IV &bull; {isReadOnly ? 'Les Pensees Partagees' : 'L Offrande Personnelle'}
           </p>
           <h2
             id="title-acte-4"
             className="font-serif text-4xl md:text-5xl font-normal text-creme-100"
           >
-            La Feuille de Gratitude
+            {isReadOnly ? 'L Arbre de Gratitude de votre Proche' : 'La Feuille de Gratitude'}
           </h2>
           <p className="font-sans text-sm text-creme-200/75 font-light leading-relaxed max-w-lg mx-auto">
-            Pour qui ou pour quoi bat votre reconnaissance aujourd&apos;hui ? Posez vos mots sur une feuille qui s&apos;envolera vers l&apos;arbre.
+            {isReadOnly
+              ? 'Vous contemplez les mercis et reconnaissances deposes par la personne qui vous a transmis ce lien.'
+              : 'Pour qui ou pour quoi bat votre reconnaissance aujourd hui ? Posez vos mots sur une feuille qui s envolera vers l arbre.'}
           </p>
         </header>
 
-        {/* Formulaire d offrande */}
-        <form
-          onSubmit={handleSubmit}
-          className="p-8 rounded-3xl bg-brun-800/70 border border-creme-200/15 backdrop-blur-md shadow-2xl space-y-6"
-        >
-          {/* Zone de texte de la gratitude */}
-          <div className="space-y-2">
-            <div className="flex justify-between items-center text-xs font-mono text-creme-200/60">
-              <label htmlFor="gratitude-input">Votre parole de gratitude</label>
-              <span className={remainingChars < 10 ? 'text-orange-accent font-semibold' : ''}>
-                {text.length} / 80
-              </span>
+        {/* Formulaire ou panneau informatif si en mode lecture seule */}
+        {isReadOnly ? (
+          <div className="p-8 rounded-3xl bg-brun-800/70 border border-orange-accent/30 backdrop-blur-md shadow-2xl space-y-6 text-center">
+            <div className="w-12 h-12 rounded-full bg-orange-accent/20 flex items-center justify-center mx-auto text-orange-accent">
+              <Leaf className="w-6 h-6" />
             </div>
-            <textarea
-              id="gratitude-input"
-              rows={3}
-              maxLength={80}
-              disabled={isFull || isAnimating}
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              placeholder={isFull ? 'L arbre a accueilli ses 12 feuilles. Vous pouvez en liberer une ci-dessous.' : 'Un instant de paix, la voix d un proche, une saveur partagee...'}
-              className="w-full px-4 py-3 rounded-2xl bg-brun-900/80 border border-creme-200/15 text-creme-100 placeholder:text-creme-200/30 text-sm focus:outline-none focus:border-orange-accent focus:ring-1 focus:ring-orange-accent resize-none transition-colors"
-            />
+            <div className="space-y-2 max-w-md mx-auto">
+              <h3 className="font-serif text-xl text-creme-100">
+                Vous visitez un arbre en lecture seule
+              </h3>
+              <p className="font-sans text-xs text-creme-200/70 leading-relaxed font-light">
+                Chaque feuille ci-dessous reflete une gratitude confiee. Vous pouvez a tout moment creer et cultiver votre propre arbre d automne.
+              </p>
+            </div>
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={onResetToPersonal}
+                className="inline-flex items-center gap-2.5 px-6 py-3 rounded-full bg-orange-accent hover:bg-orange-light text-creme-100 font-sans text-xs tracking-wider uppercase font-medium shadow-lg shadow-orange-accent/30 transition-all duration-300"
+              >
+                <Sprout className="w-4 h-4" />
+                <span>Planter mon propre arbre</span>
+              </button>
+            </div>
           </div>
-
-          {/* Suggestions rapides d inspiration */}
-          {!isFull && (
+        ) : (
+          <form
+            onSubmit={handleSubmit}
+            className="p-8 rounded-3xl bg-brun-800/70 border border-creme-200/15 backdrop-blur-md shadow-2xl space-y-6"
+          >
+            {/* Zone de texte de la gratitude */}
             <div className="space-y-2">
-              <span className="text-[11px] font-mono tracking-wider text-creme-200/40 uppercase block">
-                Inspirations d automne
-              </span>
-              <div className="flex flex-wrap gap-2">
-                {SUGGESTIONS.map((sug) => (
+              <div className="flex justify-between items-center text-xs font-mono text-creme-200/60">
+                <label htmlFor="gratitude-input">Votre parole de gratitude</label>
+                <span className={remainingChars < 10 ? 'text-orange-accent font-semibold' : ''}>
+                  {text.length} / 80
+                </span>
+              </div>
+              <textarea
+                id="gratitude-input"
+                rows={3}
+                maxLength={80}
+                disabled={isFull || isAnimating}
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                placeholder={isFull ? 'L arbre a accueilli ses 12 feuilles. Vous pouvez en liberer une ci-dessous.' : 'Un instant de paix, la voix d un proche, une saveur partagee...'}
+                className="w-full px-4 py-3 rounded-2xl bg-brun-900/80 border border-creme-200/15 text-creme-100 placeholder:text-creme-200/30 text-sm focus:outline-none focus:border-orange-accent focus:ring-1 focus:ring-orange-accent resize-none transition-colors"
+              />
+            </div>
+
+            {/* Suggestions rapides d inspiration */}
+            {!isFull && (
+              <div className="space-y-2">
+                <span className="text-[11px] font-mono tracking-wider text-creme-200/40 uppercase block">
+                  Inspirations d automne
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {SUGGESTIONS.map((sug) => (
+                    <button
+                      key={sug}
+                      type="button"
+                      onClick={() => setText(sug)}
+                      className="px-3 py-1 rounded-full bg-brun-900/60 border border-creme-200/10 hover:border-orange-accent/40 text-[11px] text-creme-200/70 hover:text-creme-100 transition-colors"
+                    >
+                      {sug}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Choix de la nuance d automne */}
+            <div className="space-y-2">
+              <label className="text-[11px] font-mono tracking-wider text-creme-200/40 uppercase block">
+                Nuance de la feuille
+              </label>
+              <div className="flex items-center gap-3">
+                {LEAF_COLORS.map((col) => (
                   <button
-                    key={sug}
+                    key={col.id}
                     type="button"
-                    onClick={() => setText(sug)}
-                    className="px-3 py-1 rounded-full bg-brun-900/60 border border-creme-200/10 hover:border-orange-accent/40 text-[11px] text-creme-200/70 hover:text-creme-100 transition-colors"
-                  >
-                    {sug}
-                  </button>
+                    onClick={() => setSelectedColor(col.hex)}
+                    title={col.label}
+                    aria-label={col.label}
+                    className={`w-7 h-7 rounded-full border-2 transition-all ${
+                      selectedColor === col.hex
+                        ? 'border-creme-100 scale-110 shadow-[0_0_12px_rgba(217,98,43,0.6)]'
+                        : 'border-transparent opacity-70 hover:opacity-100'
+                    }`}
+                    style={{ backgroundColor: col.hex }}
+                  />
                 ))}
               </div>
             </div>
-          )}
 
-          {/* Choix de la nuance d automne */}
-          <div className="space-y-2">
-            <label className="text-[11px] font-mono tracking-wider text-creme-200/40 uppercase block">
-              Nuance de la feuille
-            </label>
-            <div className="flex items-center gap-3">
-              {LEAF_COLORS.map((col) => (
-                <button
-                  key={col.id}
-                  type="button"
-                  onClick={() => setSelectedColor(col.hex)}
-                  title={col.label}
-                  aria-label={col.label}
-                  className={`w-7 h-7 rounded-full border-2 transition-all ${
-                    selectedColor === col.hex
-                      ? 'border-creme-100 scale-110 shadow-[0_0_12px_rgba(217,98,43,0.6)]'
-                      : 'border-transparent opacity-70 hover:opacity-100'
-                  }`}
-                  style={{ backgroundColor: col.hex }}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Auteur ou signature */}
-          <div className="space-y-2">
-            <label htmlFor="author-input" className="text-xs font-mono text-creme-200/60 block">
-              Prenom ou signature (optionnel)
-            </label>
-            <input
-              id="author-input"
-              type="text"
-              maxLength={30}
-              disabled={isFull || isAnimating}
-              value={author}
-              onChange={(e) => setAuthor(e.target.value)}
-              placeholder="Ex: Camille, Thomas..."
-              className="w-full px-4 py-2.5 rounded-xl bg-brun-900/80 border border-creme-200/15 text-creme-100 placeholder:text-creme-200/30 text-sm focus:outline-none focus:border-orange-accent focus:ring-1 focus:ring-orange-accent transition-colors"
-            />
-          </div>
-
-          {/* Pied du formulaire et validation */}
-          <div className="flex items-center justify-between pt-2 border-t border-creme-200/10">
-            <div className="flex items-center gap-2 text-xs font-mono text-creme-200/60">
-              <Leaf className="w-4 h-4 text-orange-accent" />
-              <span>{gratitudes.length} / {maxGratitudes} feuilles ancrees</span>
+            {/* Auteur ou signature */}
+            <div className="space-y-2">
+              <label htmlFor="author-input" className="text-xs font-mono text-creme-200/60 block">
+                Prenom ou signature (optionnel)
+              </label>
+              <input
+                id="author-input"
+                type="text"
+                maxLength={30}
+                disabled={isFull || isAnimating}
+                value={author}
+                onChange={(e) => setAuthor(e.target.value)}
+                placeholder="Ex: Camille, Thomas..."
+                className="w-full px-4 py-2.5 rounded-xl bg-brun-900/80 border border-creme-200/15 text-creme-100 placeholder:text-creme-200/30 text-sm focus:outline-none focus:border-orange-accent focus:ring-1 focus:ring-orange-accent transition-colors"
+              />
             </div>
 
-            <button
-              type="submit"
-              disabled={!text.trim() || isFull || isAnimating}
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-orange-light to-orange-dark hover:brightness-110 active:scale-95 disabled:opacity-40 disabled:pointer-events-none text-creme-100 text-xs tracking-wider uppercase font-medium shadow-md shadow-orange-accent/30 transition-all"
-            >
-              {isAnimating ? (
-                <span>Envol en cours...</span>
-              ) : (
-                <>
-                  <span>Accrocher a l arbre</span>
-                  <Send className="w-3.5 h-3.5" />
-                </>
-              )}
-            </button>
-          </div>
+            {/* Pied du formulaire et validation */}
+            <div className="flex items-center justify-between pt-2 border-t border-creme-200/10">
+              <div className="flex items-center gap-2 text-xs font-mono text-creme-200/60">
+                <Leaf className="w-4 h-4 text-orange-accent" />
+                <span>{gratitudes.length} / {maxGratitudes} feuilles ancrees</span>
+              </div>
 
-          {/* Notification temporaire d envol */}
-          {showConfirmation && (
-            <div className="p-3 rounded-xl bg-orange-accent/15 border border-orange-accent/30 text-xs text-creme-100 flex items-center gap-2 animate-fadeIn">
-              <CheckCircle2 className="w-4 h-4 text-orange-accent shrink-0" />
-              <span>Votre feuille s&apos;envole et rejoint les branches de l&apos;arbre...</span>
+              <button
+                type="submit"
+                disabled={!text.trim() || isFull || isAnimating}
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-orange-light to-orange-dark hover:brightness-110 active:scale-95 disabled:opacity-40 disabled:pointer-events-none text-creme-100 text-xs tracking-wider uppercase font-medium shadow-md shadow-orange-accent/30 transition-all"
+              >
+                {isAnimating ? (
+                  <span>Envol en cours...</span>
+                ) : (
+                  <>
+                    <span>Accrocher a l arbre</span>
+                    <Send className="w-3.5 h-3.5" />
+                  </>
+                )}
+              </button>
             </div>
-          )}
-        </form>
 
-        {/* Liste des gratitudes existantes avec gestion */}
+            {/* Notification temporaire d envol */}
+            {showConfirmation && (
+              <div className="p-3 rounded-xl bg-orange-accent/15 border border-orange-accent/30 text-xs text-creme-100 flex items-center gap-2 animate-fadeIn">
+                <CheckCircle2 className="w-4 h-4 text-orange-accent shrink-0" />
+                <span>Votre feuille s envole et rejoint les branches de l arbre...</span>
+              </div>
+            )}
+          </form>
+        )}
+
+        {/* Liste des gratitudes existantes */}
         {gratitudes.length > 0 && (
           <div className="space-y-4">
             <h3 className="text-xs font-mono tracking-widest text-creme-200/50 uppercase text-center">
-              Feuilles actuellement suspendues a votre arbre
+              Feuilles actuellement suspendues ({gratitudes.length})
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {gratitudes.map((g) => (
@@ -212,7 +242,7 @@ export function Act4Gratitude({
                       {g.author} &bull; {new Date(g.createdAt).toLocaleDateString('fr-FR')}
                     </span>
                   </div>
-                  {onDeleteGratitude && (
+                  {!isReadOnly && onDeleteGratitude && (
                     <button
                       type="button"
                       onClick={() => onDeleteGratitude(g.id)}
