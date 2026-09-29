@@ -5,8 +5,15 @@ import { CameraController } from './CameraController'
 import { Candle } from './Candle'
 import { Tree } from './Tree'
 import { FallingLeaf } from './FallingLeaf'
+import { MarketElements } from './MarketElements'
+import { FeastTable } from './FeastTable'
 
-export function Experience({ currentAct = 1, gratitudes = [], animatingLeaf = null }) {
+export function Experience({
+  currentAct = 1,
+  gratitudes = [],
+  animatingLeaf = null,
+  onSelectDish = null,
+}) {
   return (
     <div
       className="fixed inset-0 z-0 pointer-events-none w-full h-full"
@@ -29,10 +36,16 @@ export function Experience({ currentAct = 1, gratitudes = [], animatingLeaf = nu
           <EnvironmentLights />
           <CameraController currentAct={currentAct} />
           
-          {/* Bougie de l Acte 1 */}
+          {/* Bougie intimiste de l Acte 1 */}
           <Candle position={[0, 0.2, 1.2]} />
 
-          {/* Arbre stylise avec ses feuilles ancrees */}
+          {/* Offrandes du marche (Acte 2) */}
+          <MarketElements position={[1.4, -0.2, 3.2]} />
+
+          {/* Table du banquet et ses mets (Acte 3) */}
+          <FeastTable position={[-1.2, -0.1, 3.4]} onSelectDish={onSelectDish} />
+
+          {/* Arbre stylise avec ses feuilles ancrees (Acte 4 & 5) */}
           <Tree position={[0, -0.2, -0.5]} gratitudes={gratitudes} />
 
           {/* Feuille en vol libre vers les branches */}

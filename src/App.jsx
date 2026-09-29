@@ -12,6 +12,8 @@ import { ScrollIndicator } from './components/common/ScrollIndicator'
 import { ReadOnlyBanner } from './components/common/ReadOnlyBanner'
 import { encodeGratitudesToUrl, decodeGratitudesFromUrl } from './utils/urlSharing'
 import { generateThanksgivingCard } from './utils/cardGenerator'
+import { autumnSound } from './utils/soundEngine'
+import { DISHES_DATA } from './data/dishesData'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 const STORAGE_KEY = 'thanksgiving_gratitudes_2026'
@@ -48,6 +50,7 @@ export default function App() {
   const [animatingLeaf, setAnimatingLeaf] = useState(null)
   const [isAnimating, setIsAnimating] = useState(false)
   const [isReadOnly, setIsReadOnly] = useState(false)
+  const [selectedDish, setSelectedDish] = useState(null)
 
   // Recuperation initiale (URL partagee prioritaire sans ecraser le stockage local)
   const [gratitudes, setGratitudes] = useState(() => {
@@ -106,10 +109,32 @@ export default function App() {
     }
   }, [])
 
+  // Activation du son au premier clic "Entrer"
   const handleEnterExperience = () => {
+    autumnSound.start()
     setIsPlayingSound(true)
     scrollTo('#acte-2', { duration: 1.6 })
   }
+
+  // Bascule du son par le bouton dédié
+  const handleToggleSound = () => {
+    const active = autumnSound.toggle()
+    setIsPlayingSound(active)
+  }
+
+  // Sélection d un plat (3D ou clic carte)
+  const handleSelectDish = useCallback((dishOrId) => {
+    if (!dishOrId) {
+      setSelectedDish(null)
+      return
+    }
+    if (typeof dishOrId === 'string') {
+      const found = DISHES_DATA.find((d) => d.id === dishOrId)
+      setSelectedDish(found || null)
+    } else {
+      setSelectedDish(dishOrId)
+    }
+  }, [])
 
   // Declenchement du vol 3D de la feuille
   const handleAddGratitude = useCallback((newGratitude) => {
@@ -170,7 +195,7 @@ export default function App() {
     scrollTo('#acte-4', { duration: 1.5 })
   }, [scrollTo])
 
-  // Generation et telechargement de la carte souvenir PNG 1080x1920
+  // Generation de la carte souvenir PNG 1080x1920
   const handleDownloadCard = useCallback(async () => {
     return generateThanksgivingCard(gratitudes)
   }, [gratitudes])
@@ -189,17 +214,18 @@ export default function App() {
         <ReadOnlyBanner onResetToPersonal={handleResetToPersonal} />
       )}
 
-      {/* Scene 3D WebGL */}
+      {/* Scene 3D WebGL (avec bougie, marche, table, arbre et feuille animée) */}
       <Experience
         currentAct={currentAct}
         gratitudes={gratitudes}
         animatingLeaf={animatingLeaf}
+        onSelectDish={handleSelectDish}
       />
 
-      {/* Bouton de son discret */}
+      {/* Bouton de son d ambiance */}
       <SoundToggle
         isPlaying={isPlayingSound}
-        onToggle={() => setIsPlayingSound((p) => !p)}
+        onToggle={handleToggleSound}
       />
 
       {/* Indicateur d acte au scroll */}
@@ -209,7 +235,10 @@ export default function App() {
       <main className="relative z-10">
         <Act1Arrival onEnter={handleEnterExperience} />
         <Act2Market />
-        <Act3Table />
+        <Act3Table
+          selectedDish={selectedDish}
+          onSelectDish={handleSelectDish}
+        />
         <Act4Gratitude
           gratitudes={gratitudes}
           onAddGratitude={handleAddGratitude}

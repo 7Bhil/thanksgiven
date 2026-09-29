@@ -1,10 +1,7 @@
-import { useState } from 'react'
 import { DISHES_DATA } from '../../data/dishesData'
 import { Info, X } from 'lucide-react'
 
-export function Act3Table() {
-  const [activeDish, setActiveDish] = useState(null)
-
+export function Act3Table({ selectedDish, onSelectDish }) {
   return (
     <section
       id="acte-3"
@@ -13,7 +10,7 @@ export function Act3Table() {
     >
       <div className="max-w-4xl mx-auto w-full space-y-12">
         <header className="text-center space-y-4 max-w-lg mx-auto">
-          <p className="text-xs uppercase tracking-[0.3em] text-orange-accent font-sans">
+          <p className="text-xs uppercase tracking-[0.3em] text-orange-accent font-sans font-medium">
             Acte III &bull; Le Festin Partage
           </p>
           <h2
@@ -33,7 +30,7 @@ export function Act3Table() {
             <button
               key={dish.id}
               type="button"
-              onClick={() => setActiveDish(dish)}
+              onClick={() => onSelectDish && onSelectDish(dish)}
               className="text-left p-6 rounded-2xl bg-brun-800/50 border border-creme-200/10 hover:border-orange-accent/40 hover:bg-brun-800/80 transition-all duration-300 group flex flex-col justify-between h-44"
             >
               <div>
@@ -52,18 +49,18 @@ export function Act3Table() {
           ))}
         </div>
 
-        {/* Modale ou tiroir d histoire d un plat */}
-        {activeDish && (
+        {/* Modale d histoire du plat */}
+        {selectedDish && (
           <div
             role="dialog"
             aria-modal="true"
             aria-labelledby="modal-dish-title"
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brun-950/80 backdrop-blur-md transition-all"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brun-950/80 backdrop-blur-md transition-all animate-fadeIn"
           >
             <div className="relative max-w-md w-full p-8 rounded-3xl bg-brun-900 border border-creme-200/20 shadow-2xl space-y-6">
               <button
                 type="button"
-                onClick={() => setActiveDish(null)}
+                onClick={() => onSelectDish && onSelectDish(null)}
                 aria-label="Fermer le recit"
                 className="absolute top-6 right-6 p-1.5 rounded-full text-creme-200/60 hover:text-creme-100 hover:bg-creme-200/10 transition-colors"
               >
@@ -72,15 +69,15 @@ export function Act3Table() {
 
               <header className="space-y-1 pr-6">
                 <span className="text-xs font-mono tracking-widest text-orange-accent uppercase">
-                  {activeDish.origin}
+                  {selectedDish.origin}
                 </span>
                 <h3 id="modal-dish-title" className="font-serif text-2xl text-creme-100">
-                  {activeDish.name}
+                  {selectedDish.name}
                 </h3>
               </header>
 
               <p className="font-sans text-sm text-creme-200/80 leading-relaxed font-light">
-                {activeDish.description}
+                {selectedDish.description}
               </p>
 
               <div className="p-4 rounded-xl bg-brun-800/60 border border-creme-200/10">
@@ -88,14 +85,14 @@ export function Act3Table() {
                   Note culinaire
                 </span>
                 <p className="font-sans text-xs text-creme-200/70 italic">
-                  {activeDish.details}
+                  {selectedDish.details}
                 </p>
               </div>
 
               <div className="pt-2 flex justify-end">
                 <button
                   type="button"
-                  onClick={() => setActiveDish(null)}
+                  onClick={() => onSelectDish && onSelectDish(null)}
                   className="px-5 py-2 text-xs font-sans tracking-wide uppercase font-medium rounded-full bg-creme-200/10 text-creme-100 hover:bg-creme-200/20 transition-colors"
                 >
                   Refermer
