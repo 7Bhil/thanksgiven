@@ -9,6 +9,8 @@ import { Act4Gratitude } from './components/sections/Act4Gratitude'
 import { Act5Tree } from './components/sections/Act5Tree'
 import { SoundToggle } from './components/common/SoundToggle'
 import { ScrollIndicator } from './components/common/ScrollIndicator'
+import { ReadOnlyBanner } from './components/common/ReadOnlyBanner'
+import { encodeGratitudesToUrl, decodeGratitudesFromUrl } from './utils/urlSharing'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 const STORAGE_KEY = 'thanksgiving_gratitudes_2026'
@@ -44,9 +46,17 @@ export default function App() {
   const [currentAct, setCurrentAct] = useState(1)
   const [animatingLeaf, setAnimatingLeaf] = useState(null)
   const [isAnimating, setIsAnimating] = useState(false)
+  const [isReadOnly, setIsReadOnly] = useState(false)
 
-  // Recuperation securisee du localStorage
+  // Recuperation initiale (URL partagee prioritaire sans ecraser le stockage local)
   const [gratitudes, setGratitudes] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const shared = decodeGratitudesFromUrl(window.location.search)
+      if (shared && shared.length > 0) {
+        return shared
+      }
+    }
+
     try {
       const saved = localStorage.getItem(STORAGE_KEY)
       if (saved) {
@@ -59,14 +69,23 @@ export default function App() {
     }
   })
 
-  // Synchronisation defensive du localStorage
+  // Verification au montage du mode lecture seule
   useEffect(() => {
+    const shared = decodeGratitudesFromUrl(window.location.search)
+    if (shared && shared.length > 0) {
+      setIsReadOnly(true)
+    }
+  }, [])
+
+  // Sauvegarde dans localStorage uniquement pour l arbre personnel (pas en lecture seule)
+  useEffect(() => {
+    if (isReadOnly) return
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(gratitudes))
     } catch (err) {
       console.warn('Impossible de synchroniser le localStorage', err)
     }
-  }, [gratitudes])
+  }, [gratitudes, isReadOnly])
 
   // Suivi de l acte actif au scroll avec ScrollTrigger
   useEffect(() => {
@@ -91,20 +110,18 @@ export default function App() {
     scrollTo('#acte-2', { duration: 1.6 })
   }
 
-  // Declenchement de l animation de vol de la feuille vers l arbre
+  // Declenchement du vol 3D de la feuille
   const handleAddGratitude = useCallback((newGratitude) => {
-    if (gratitudes.length >= 12 || isAnimating) return
+    if (gratitudes.length >= 12 || isAnimating || isReadOnly) return
 
     setIsAnimating(true)
 
-    // Calcul de la branche cible sur l arbre 3D
     const targetIndex = gratitudes.length % GRATITUDE_LEAF_POSITIONS.length
     const branchTarget = GRATITUDE_LEAF_POSITIONS[targetIndex]
     
-    // Position dans le repere monde de la branche
     const targetWorldPos = [
       branchTarget[0],
-      branchTarget[1] - 0.2, // decalage du tronc
+      branchTarget[1] - 0.2,
       branchTarget[2] - 0.5,
     ]
 
@@ -113,32 +130,66 @@ export default function App() {
       targetPos: targetWorldPos,
       color: newGratitude.leafColor || '#d9622b',
       onComplete: () => {
-        // Enracinement permanent sur l arbre
         setGratitudes((prev) => [newGratitude, ...prev].slice(0, 12))
         setAnimatingLeaf(null)
         setIsAnimating(false)
-        // Transition douce vers l Acte 5 pour admirer l arbre
         scrollTo('#acte-5', { duration: 2.0 })
       },
     })
-  }, [gratitudes.length, isAnimating, scrollTo])
+  }, [gratitudes.length, isAnimating, isReadOnly, scrollTo])
 
-  // Suppression d une gratitude pour liberer une feuille
+  // Suppression d une feuille personnelle
   const handleDeleteGratitude = useCallback((id) => {
+    if (isReadOnly) return
     setGratitudes((prev) => prev.filter((g) => g.id !== id))
-  }, [])
+  }, [isReadOnly])
+
+  // Passage en mode personnel (quitter la lecture seule)
+  const handleResetToPersonal = useCallback(() => {
+    // Retrait du parametre ?g=... dans la barre d adresse
+    if (window.history && window.history.pushState) {
+      window.history.pushState({}, '', window.location.pathname)
+    }
+
+    setIsReadOnly(false)
+
+    // Restauration de l arbre personnel
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY)
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setGratitudes(parsed)
+          scrollTo('#acte-4', { duration: 1.5 })
+          return
+        }
+      }
+    } catch {
+      // Ignorer
+    }
+    setGratitudes(DEFAULT_GRATITUDES)
+    scrollTo('#acte-4', { duration: 1.5 })
+  }, [scrollTo])
 
   const handleDownloadCard = () => {
     alert('L export de la carte sera integre a l etape 5.')
   }
 
-  const handleShareLink = () => {
-    navigator.clipboard?.writeText?.(window.location.href)
-  }
+  // Copie de l URL avec encodage base64 des gratitudes
+  const handleShareLink = useCallback(() => {
+    const encoded = encodeGratitudesToUrl(gratitudes)
+    const shareUrl = `${window.location.origin}${window.location.pathname}?g=${encoded}`
+    navigator.clipboard?.writeText?.(shareUrl)
+  }, [gratitudes])
 
   return (
     <div className="relative min-h-screen bg-brun-900 text-creme-200 selection:bg-orange-accent selection:text-creme-100 font-sans">
-      {/* Scene 3D WebGL avec support de vol de la feuille */}
+      {/* Bandeau d indication si visite en lecture seule */}
+      {isReadOnly && (
+        <ReadOnlyBanner onResetToPersonal={handleResetToPersonal} />
+      )}
+
+      {/* Scene 3D WebGL */}
       <Experience
         currentAct={currentAct}
         gratitudes={gratitudes}
@@ -151,10 +202,10 @@ export default function App() {
         onToggle={() => setIsPlayingSound((p) => !p)}
       />
 
-      {/* Indicateur de progression du rituel */}
+      {/* Indicateur d acte au scroll */}
       <ScrollIndicator activeAct={currentAct} totalActs={5} />
 
-      {/* Parcours scrollytelling en 5 Actes */}
+      {/* Contenu principal en 5 Actes */}
       <main className="relative z-10">
         <Act1Arrival onEnter={handleEnterExperience} />
         <Act2Market />
@@ -163,13 +214,17 @@ export default function App() {
           gratitudes={gratitudes}
           onAddGratitude={handleAddGratitude}
           onDeleteGratitude={handleDeleteGratitude}
+          onResetToPersonal={handleResetToPersonal}
           maxGratitudes={12}
           isAnimating={isAnimating}
+          isReadOnly={isReadOnly}
         />
         <Act5Tree
           gratitudes={gratitudes}
           onDownloadCard={handleDownloadCard}
           onShareLink={handleShareLink}
+          onResetToPersonal={handleResetToPersonal}
+          isReadOnly={isReadOnly}
         />
       </main>
     </div>

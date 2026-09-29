@@ -1,10 +1,16 @@
 import { useState, useEffect } from 'react'
-import { Share2, Download, Check, Sparkles } from 'lucide-react'
+import { Share2, Download, Check, Sparkles, Sprout } from 'lucide-react'
 
 // Date cible : Thanksgiving, jeudi 26 novembre 2026
 const TARGET_DATE = new Date('2026-11-26T00:00:00')
 
-export function Act5Tree({ gratitudes = [], onDownloadCard, onShareLink }) {
+export function Act5Tree({
+  gratitudes = [],
+  onDownloadCard,
+  onShareLink,
+  onResetToPersonal,
+  isReadOnly = false,
+}) {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 })
   const [copied, setCopied] = useState(false)
 
@@ -47,17 +53,19 @@ export function Act5Tree({ gratitudes = [], onDownloadCard, onShareLink }) {
     >
       <div className="max-w-4xl mx-auto w-full space-y-14 text-center">
         <header className="space-y-4 max-w-lg mx-auto">
-          <p className="text-xs uppercase tracking-[0.3em] text-orange-accent font-sans">
-            Acte V &bull; L Arbre Rayonnant
+          <p className="text-xs uppercase tracking-[0.3em] text-orange-accent font-sans font-medium">
+            Acte V &bull; {isReadOnly ? 'L Arbre Partage' : 'L Arbre Rayonnant'}
           </p>
           <h2
             id="title-acte-5"
             className="font-serif text-4xl md:text-6xl font-normal text-creme-100"
           >
-            Votre Canopee de Reconnaissance
+            {isReadOnly ? 'La Canopee de votre Proche' : 'Votre Canopee de Reconnaissance'}
           </h2>
           <p className="font-sans text-sm text-creme-200/70 font-light leading-relaxed">
-            Chaque parole laissee orne desormais les branches de l&apos;arbre.
+            {isReadOnly
+              ? 'Toutes ces pensees ont ete rassemblees pour celebrer la reconnaissance et le partage.'
+              : 'Chaque parole laissee orne desormais les branches de l arbre.'}
           </p>
         </header>
 
@@ -89,7 +97,7 @@ export function Act5Tree({ gratitudes = [], onDownloadCard, onShareLink }) {
         {gratitudes.length > 0 && (
           <div className="max-w-2xl mx-auto space-y-3">
             <span className="text-xs font-mono tracking-widest text-creme-200/40 uppercase block">
-              Feuilles enracinees ({gratitudes.length})
+              Feuilles ancrees ({gratitudes.length})
             </span>
             <div className="flex flex-wrap justify-center gap-2.5">
               {gratitudes.map((g) => (
@@ -127,7 +135,7 @@ export function Act5Tree({ gratitudes = [], onDownloadCard, onShareLink }) {
             {copied ? (
               <>
                 <Check className="w-4 h-4 text-creme-100" />
-                <span>Lien copie !</span>
+                <span>Lien de partage copie !</span>
               </>
             ) : (
               <>
@@ -136,6 +144,17 @@ export function Act5Tree({ gratitudes = [], onDownloadCard, onShareLink }) {
               </>
             )}
           </button>
+
+          {isReadOnly && onResetToPersonal && (
+            <button
+              type="button"
+              onClick={onResetToPersonal}
+              className="inline-flex items-center gap-2.5 px-6 py-3 rounded-full bg-brun-800 hover:bg-brun-700 text-creme-100 font-sans text-xs tracking-wider uppercase font-medium border border-orange-accent/40 shadow-md transition-all duration-300"
+            >
+              <Sprout className="w-4 h-4 text-orange-accent" />
+              <span>Planter mon propre arbre</span>
+            </button>
+          )}
         </div>
       </div>
     </section>
