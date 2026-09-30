@@ -71,8 +71,8 @@ export function Act2Market({ onAddToCart }) {
                 <div className="pt-6 mt-6 border-t border-creme-100/10 flex items-center justify-between">
                   <div>
                     <span className="text-xs text-creme-200/50 font-sans block">Prix unitaire</span>
-                    <span className="font-serif text-2xl text-creme-100 font-semibold">
-                      {product.price.toFixed(2)} &euro;
+                    <span className="font-serif text-xl md:text-2xl text-creme-100 font-semibold">
+                      {product.price.toLocaleString('fr-FR')} XOF
                     </span>
                   </div>
 

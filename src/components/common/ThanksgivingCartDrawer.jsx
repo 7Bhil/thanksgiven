@@ -23,7 +23,7 @@ export function ThanksgivingCartDrawer({
   if (!isOpen) return null
 
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0)
-  const shipping = subtotal > 60 || subtotal === 0 ? 0 : 5.50
+  const shipping = subtotal > 40000 || subtotal === 0 ? 0 : 3000
   const total = subtotal + shipping
 
   const handleQuantity = (productId, delta) => {
@@ -163,7 +163,7 @@ export function ThanksgivingCartDrawer({
             <div className="p-3 rounded-xl bg-forest-800 border border-orange-accent/20 space-y-1 text-xs">
               <div className="flex justify-between text-creme-200">
                 <span>Total à régler :</span>
-                <span className="font-serif text-base text-orange-accent font-semibold">{total.toFixed(2)} &euro;</span>
+                <span className="font-serif text-base text-orange-accent font-semibold">{total.toLocaleString('fr-FR')} XOF</span>
               </div>
               <p className="text-[10px] text-creme-200/50 font-light">
                 Simulation de paiement immédiat sans intermédiaire.
@@ -205,7 +205,7 @@ export function ThanksgivingCartDrawer({
                       {item.name}
                     </h4>
                     <span className="text-xs font-mono text-orange-accent">
-                      {item.price.toFixed(2)} &euro;
+                      {item.price.toLocaleString('fr-FR')} XOF
                     </span>
                   </div>
 
@@ -251,18 +251,18 @@ export function ThanksgivingCartDrawer({
             <div className="space-y-1.5 text-xs text-creme-200/80 font-light">
               <div className="flex justify-between">
                 <span>Sous-total</span>
-                <span className="font-mono text-creme-100">{subtotal.toFixed(2)} &euro;</span>
+                <span className="font-mono text-creme-100">{subtotal.toLocaleString('fr-FR')} XOF</span>
               </div>
               <div className="flex justify-between">
                 <span>Frais de livraison</span>
                 <span className="font-mono text-creme-100">
-                  {shipping === 0 ? 'Gratuits dès 60€' : `${shipping.toFixed(2)} €`}
+                  {shipping === 0 ? 'Gratuits dès 40 000 XOF' : `${shipping.toLocaleString('fr-FR')} XOF`}
                 </span>
               </div>
               <div className="flex justify-between text-sm font-medium text-creme-100 pt-1 border-t border-creme-100/10">
                 <span>Total</span>
                 <span className="font-serif text-lg text-orange-accent font-semibold">
-                  {total.toFixed(2)} &euro;
+                  {total.toLocaleString('fr-FR')} XOF
                 </span>
               </div>
             </div>
