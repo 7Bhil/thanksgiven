@@ -17,8 +17,11 @@ import { generateThanksgivingCard } from './utils/cardGenerator'
 import { autumnSound } from './utils/soundEngine'
 import { DISHES_DATA } from './data/dishesData'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { ThanksgivingCartDrawer } from './components/common/ThanksgivingCartDrawer'
+import { ShoppingBag } from 'lucide-react'
 
 const STORAGE_KEY = 'thanksgiving_gratitudes_2026'
+const STORAGE_KEY_CART = 'thanksgiving_cart_2026'
 
 // Feuilles initiales pre-ecrites pour que l arbre ne soit jamais nu
 const DEFAULT_GRATITUDES = [
@@ -54,6 +57,60 @@ export default function App() {
   const [isAnimating, setIsAnimating] = useState(false)
   const [isReadOnly, setIsReadOnly] = useState(false)
   const [selectedDish, setSelectedDish] = useState(null)
+  const [isCartOpen, setIsCartOpen] = useState(false)
+
+  // Persistance du panier d'achat
+  const [cartItems, setCartItems] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_CART)
+      return saved ? JSON.parse(saved) : []
+    } catch {
+      return []
+    }
+  })
+
+  // Synchronisation localStorage du panier
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY_CART, JSON.stringify(cartItems))
+    } catch {
+      // Ignorer
+    }
+  }, [cartItems])
+
+  const handleAddToCart = (product) => {
+    setCartItems((prev) => {
+      const existing = prev.find((item) => item.id === product.id)
+      if (existing) {
+        return prev.map((item) =>
+          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+        )
+      }
+      return [...prev, { ...product, quantity: 1 }]
+    })
+  }
+
+  const handleUpdateCartQuantity = (productId, delta) => {
+    setCartItems((prev) =>
+      prev
+        .map((item) => {
+          if (item.id === productId) {
+            const nextQty = item.quantity + delta
+            return nextQty > 0 ? { ...item, quantity: nextQty } : null
+          }
+          return item
+        })
+        .filter(Boolean)
+    )
+  }
+
+  const handleRemoveFromCart = (productId) => {
+    setCartItems((prev) => prev.filter((item) => item.id !== productId))
+  }
+
+  const handleClearCart = () => {
+    setCartItems([])
+  }
 
   // Recuperation initiale (URL partagee prioritaire sans ecraser le stockage local)
   const [gratitudes, setGratitudes] = useState(() => {
@@ -236,6 +293,28 @@ export default function App() {
         />
       )}
 
+      {/* Bouton Panier Flottant avec badge */}
+      <button
+        type="button"
+        onClick={() => setIsCartOpen(true)}
+        aria-label="Voir le panier du marché"
+        className="fixed top-6 right-20 z-50 flex items-center gap-2.5 px-4 py-2 rounded-full bg-forest-900/80 border border-orange-accent/40 backdrop-blur-md text-creme-100 hover:bg-forest-900 hover:border-orange-accent transition-all shadow-lg shadow-orange-accent/10"
+      >
+        <div className="relative">
+          <ShoppingBag className="w-4 h-4 text-orange-accent" />
+          {cartItems.reduce((acc, i) => acc + i.quantity, 0) > 0 && (
+            <span className="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-orange-accent text-forest-900 font-mono text-[10px] font-bold flex items-center justify-center animate-pulse">
+              {cartItems.reduce((acc, i) => acc + i.quantity, 0)}
+            </span>
+          )}
+        </div>
+        <span className="text-xs font-sans font-medium hidden sm:inline">
+          {cartItems.length > 0
+            ? `${cartItems.reduce((acc, i) => acc + i.price * i.quantity, 0).toLocaleString('fr-FR')} XOF`
+            : 'Marché'}
+        </span>
+      </button>
+
       {/* Bouton de son d ambiance */}
       <SoundToggle
         isPlaying={isPlayingSound}
@@ -255,10 +334,20 @@ export default function App() {
       {/* Indicateur d acte au scroll */}
       <ScrollIndicator activeAct={currentAct} totalActs={5} />
 
+      {/* Tiroir de panier e-commerce Thanksgiving */}
+      <ThanksgivingCartDrawer
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        cartItems={cartItems}
+        onUpdateQuantity={handleUpdateCartQuantity}
+        onRemoveItem={handleRemoveFromCart}
+        onClearCart={handleClearCart}
+      />
+
       {/* Contenu principal en 5 Actes */}
       <main className="relative z-10">
         <Act1Arrival onEnter={handleEnterExperience} />
-        <Act2Market />
+        <Act2Market onAddToCart={handleAddToCart} />
         <Act3Table
           selectedDish={selectedDish}
           onSelectDish={handleSelectDish}
