@@ -200,6 +200,13 @@ export function ThanksgivingCartDrawer({
                   key={item.id}
                   className="p-3.5 rounded-2xl bg-forest-800 border border-creme-100/10 flex items-center justify-between gap-3"
                 >
+                  {item.image && (
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="w-12 h-12 rounded-xl object-cover border border-creme-100/15 flex-shrink-0"
+                    />
+                  )}
                   <div className="flex-1 min-w-0">
                     <h4 className="font-serif text-sm text-creme-100 truncate">
                       {item.name}
